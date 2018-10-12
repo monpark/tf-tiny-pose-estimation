@@ -58,7 +58,7 @@ class ModelBuilder(object):
 
 
 
-
+    # _ private
     def _get_reception_layer(self,ch_in,
                             num_outputs,
                             model_config,
@@ -123,7 +123,7 @@ class ModelBuilder(object):
                               padding='SAME',
                               trainable             =model_config.is_trainable,
                               scope='1x1conv')
-
+            # drop 대신에 batch normal을 써도 된다.
             out = slim.dropout(inputs= net,
                                keep_prob=self.dropout_keeprate)
 
@@ -153,6 +153,7 @@ class ModelBuilder(object):
                                                 scope                       ='downsample_'+str(down_index))
                 downsample_out_stack.append(net)
 
+            # bottom layer
             center = self._get_separable_conv2d(ch_in           =net,
                                                 ch_out_num      =ch_in_num,
                                                 model_config    =model_config_separable_conv,
@@ -160,9 +161,11 @@ class ModelBuilder(object):
 
             # add skip connection
             net = center
+            # decoder part
             for up_index in range(0,model_config.num_stage):
                 net = tf.add(x=net, y=downsample_out_stack.pop())
 
+                # nened 1x1 conv add
                 net = self.upsample_hourglass(ch_in                         =net,
                                               model_config                  =model_config,
                                               model_config_separable_conv   =model_config_separable_conv,
@@ -208,6 +211,7 @@ class ModelBuilder(object):
 
         ch_in_num   = input_shape[3]
         with tf.variable_scope(name_or_scope=scope,values=[ch_in]):
+            # conv2d_transpoer를 써도 된다. 학습 유무 차이 (weight)
             net = tf.image.resize_bilinear(images       =ch_in,
                                            size         =output_shape,
                                            align_corners=False,
