@@ -69,6 +69,7 @@ def train(dataset_train, dataset_test):
 
     # traning ops =============================================
         # < complete codes here >
+        # batch size에 대한 정규화, batch size 변경 시 비교가 가능하다.
         loss_heatmap        = train_config.loss_fn(true_heatmap - pred_heatmap) / train_config.batch_size
         loss_regularizer    = tf.losses.get_regularization_loss()
         loss_op             = loss_heatmap + loss_regularizer
@@ -89,6 +90,7 @@ def train(dataset_train, dataset_test):
 
 
     # For Tensorboard ===========================================
+    # 중간 결과 보려면, tf.summray.image? 같은 함수 사용 가능. 단 서머리가 많아지면 속도가 느려진다.
     file_writer = tf.summary.FileWriter(logdir=train_config.tflogdir)
     file_writer.add_graph(tf.get_default_graph())
 
@@ -113,6 +115,7 @@ def train(dataset_train, dataset_test):
         train_handle    = sess.run(dataset_train_iterator.string_handle())
         test_handle     = sess.run(dataset_test_iterator.string_handle())
 
+        # for 문이 하나밖에 없다. 나머지 하나는 tf.data에서 처리해준다.
         for epoch in range(train_config.training_epochs):
 
             train_start_time = time.time()
